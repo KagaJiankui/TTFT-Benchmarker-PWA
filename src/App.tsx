@@ -153,7 +153,15 @@ function App() {
         let inThinking = false
         let thinkingProcessed = false
 
-        for await (const chunk of streamChatCompletion(slot.provider!, slot.modelId!, messages)) {
+        for await (const data of streamChatCompletion(slot.provider!, slot.modelId!, messages)) {
+          if (data.httpStatus !== undefined) {
+            response.metrics.httpStatus = data.httpStatus
+            continue
+          }
+
+          if (!data.chunk) continue
+          
+          const chunk = data.chunk
           fullText += chunk
 
           if (!response.metrics.firstToken) {

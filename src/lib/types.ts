@@ -28,6 +28,7 @@ export interface TimingMetrics {
   totalTokens?: number
   cotTokens?: number
   contentTokens?: number
+  httpStatus?: number
 }
 
 export interface ModelResponse {

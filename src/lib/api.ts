@@ -46,7 +46,7 @@ export async function* streamChatCompletion(
   provider: Provider,
   modelId: string,
   messages: ChatMessage[]
-): AsyncGenerator<string, void, unknown> {
+): AsyncGenerator<{ chunk?: string; httpStatus?: number }, void, unknown> {
   const url = buildApiUrl(provider.endpoint, '/chat/completions')
   
   const response = await fetch(url, {
@@ -65,6 +65,8 @@ export async function* streamChatCompletion(
   if (!response.ok) {
     throw new Error(`API Error: ${response.status} ${response.statusText}`)
   }
+
+  yield { httpStatus: response.status }
 
   const reader = response.body?.getReader()
   if (!reader) {
@@ -93,7 +95,7 @@ export async function* streamChatCompletion(
             const delta = json.choices?.[0]?.delta
             
             if (delta?.content) {
-              yield delta.content
+              yield { chunk: delta.content }
             }
           } catch (e) {
             console.warn('Failed to parse SSE:', trimmed)
