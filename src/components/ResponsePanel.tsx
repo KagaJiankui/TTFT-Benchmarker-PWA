@@ -104,7 +104,7 @@ export function ResponsePanel({ response, displayName }: ResponsePanelProps) {
             {response.thinking && cotDuration !== null && (
               <div className="flex-1 flex flex-col items-center justify-center border-t border-b border-purple-200 py-4 min-h-[100px] relative">
                 <div className="absolute top-2 text-[10px] font-mono text-purple-600 font-semibold whitespace-nowrap">
-                  CoT Duration
+                  CoT
                 </div>
                 <div className="text-xs font-mono text-muted-foreground mt-4">
                   {formatDuration(cotDuration)}
@@ -127,7 +127,7 @@ export function ResponsePanel({ response, displayName }: ResponsePanelProps) {
 
                 <div className="flex-1 flex flex-col items-center justify-center border-t border-b border-green-200 py-4 min-h-[120px] relative">
                   <div className="absolute top-2 text-[10px] font-mono text-green-600 font-semibold whitespace-nowrap text-center">
-                    正文持续时间
+                    正文
                   </div>
                   {contentDuration !== null && (
                     <div className="text-xs font-mono text-muted-foreground mt-4">
@@ -156,7 +156,7 @@ export function ResponsePanel({ response, displayName }: ResponsePanelProps) {
             {response.metrics.httpStatus && (
               <div className="flex flex-col items-center gap-2">
                 <div className="text-[10px] font-mono text-muted-foreground text-center leading-tight">
-                  显示HTTP<br/>返回码
+                  HTTP
                 </div>
                 <div className={`text-sm font-bold font-mono ${
                   response.metrics.httpStatus === 200 
