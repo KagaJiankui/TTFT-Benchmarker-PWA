@@ -313,7 +313,7 @@ function App() {
           </p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[480px_1fr] gap-6">
           <div className="space-y-4">
             <Card className="p-4">
               <Label htmlFor="system-prompt" className="text-sm font-semibold">System Prompt</Label>
@@ -377,7 +377,7 @@ function App() {
                 </div>
 
                 <ScrollArea className="h-[400px]">
-                  <div className="space-y-3 pr-3">
+                  <div className="space-y-3 pr-4">
                     {(providers || []).map((provider) => (
                       <ProviderCard
                         key={provider.id}
