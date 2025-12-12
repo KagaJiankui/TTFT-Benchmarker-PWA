@@ -50,7 +50,22 @@ export function RequestParamsCard({ providerId, params, onUpdate }: RequestParam
   }
 
   const handleBlur = (index: number) => {
-    updateProvider(entries)
+    const entry = entries[index]
+    if (!entry.key.trim() && !entry.value.trim()) {
+      const newEntries = entries.filter((_, i) => i !== index)
+      setEntries(newEntries)
+      updateProvider(newEntries)
+    } else {
+      updateProvider(entries)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      const target = e.target as HTMLInputElement
+      target.blur()
+    }
   }
 
   const updateProvider = (currentEntries: Array<{ key: string; value: string }>) => {
@@ -71,50 +86,69 @@ export function RequestParamsCard({ providerId, params, onUpdate }: RequestParam
     }
   }
 
+  const handleClearAll = () => {
+    setEntries([])
+    updateProvider([])
+  }
+
   return (
     <Card className="p-3 mt-3">
-      <div className="flex items-center justify-between mb-2">
-        <h4 className="text-xs font-semibold text-muted-foreground">Request Parameters</h4>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-6 w-6 p-0"
-          onClick={handleAddParam}
-        >
-          <Plus className="h-3 w-3" />
-        </Button>
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <h4 className="text-xs font-semibold text-muted-foreground flex-shrink-0">Request Params</h4>
+        <div className="flex gap-1 flex-shrink-0">
+          {entries.length > 0 && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 px-2 text-xs"
+              onClick={handleClearAll}
+            >
+              Clear
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 w-6 p-0"
+            onClick={handleAddParam}
+          >
+            <Plus className="h-3 w-3" />
+          </Button>
+        </div>
       </div>
       
       <div className="space-y-1.5 max-h-32 overflow-y-auto">
         {entries.length === 0 ? (
           <p className="text-xs text-muted-foreground text-center py-2">
-            No custom parameters. Click + to add.
+            No custom params. Click + to add.
           </p>
         ) : (
           entries.map((entry, index) => (
-            <div key={index} className="flex gap-1.5 items-center">
+            <div key={index} className="flex gap-1 items-center">
               <Input
                 id={`${providerId}-${index}-key`}
                 value={entry.key}
                 onChange={(e) => handleKeyChange(index, e.target.value)}
                 onBlur={() => handleBlur(index)}
+                onKeyDown={(e) => handleKeyDown(e, index)}
                 onDoubleClick={() => handleDoubleClick(index, 'key')}
                 placeholder="key"
-                className="text-xs h-7 flex-1 font-mono"
+                className="text-xs h-7 min-w-0 w-20 font-mono"
               />
               <Input
                 id={`${providerId}-${index}-value`}
                 value={entry.value}
                 onChange={(e) => handleValueChange(index, e.target.value)}
                 onBlur={() => handleBlur(index)}
+                onKeyDown={(e) => handleKeyDown(e, index)}
                 onDoubleClick={() => handleDoubleClick(index, 'value')}
-                placeholder="value (JSON)"
-                className="text-xs h-7 flex-[2] font-mono"
+                placeholder="value"
+                className="text-xs h-7 min-w-0 flex-1 font-mono"
               />
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-7 w-7 p-0 text-destructive"
+                className="h-7 w-7 p-0 flex-shrink-0 text-destructive"
                 onClick={() => handleRemoveParam(index)}
               >
                 <Trash className="h-3 w-3" />
@@ -125,7 +159,7 @@ export function RequestParamsCard({ providerId, params, onUpdate }: RequestParam
       </div>
       
       <p className="text-[10px] text-muted-foreground mt-2">
-        Double-click to edit. Values are parsed as JSON.
+        Double-click to select. Press Enter or blur to save. Leave empty to delete.
       </p>
     </Card>
   )
