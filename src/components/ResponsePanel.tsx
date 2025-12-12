@@ -39,16 +39,18 @@ export function ResponsePanel({ response, displayName }: ResponsePanelProps) {
         <h3 className="font-semibold text-sm font-mono">{displayName}</h3>
         {response.status === 'streaming' && (
           <Badge className="bg-accent text-accent-foreground border-2 border-foreground animate-pulse">
-            Streaming...
+            {response.metrics.httpStatus ? `HTTP ${response.metrics.httpStatus} · ` : ''}Streaming...
           </Badge>
         )}
         {response.status === 'complete' && (
           <Badge variant="outline" className="border-2 border-foreground">
-            Complete ✓
+            {response.metrics.httpStatus ? `HTTP ${response.metrics.httpStatus} · ` : ''}Complete ✓
           </Badge>
         )}
         {response.status === 'error' && (
-          <Badge variant="destructive" className="border-2 border-destructive">Error</Badge>
+          <Badge variant="destructive" className="border-2 border-destructive">
+            {response.metrics.httpStatus ? `HTTP ${response.metrics.httpStatus} · ` : ''}Error
+          </Badge>
         )}
       </div>
 
@@ -166,25 +168,6 @@ export function ResponsePanel({ response, displayName }: ResponsePanelProps) {
                 </div>
                 <div className="text-xs font-mono text-muted-foreground">
                   {formatDuration(totalDuration)}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="flex flex-col border-l-2 border-foreground w-20 flex-shrink-0 bg-muted/20">
-          <div className="flex-1 flex flex-col items-center justify-start py-4 px-2">
-            {response.metrics.httpStatus && (
-              <div className="flex flex-col items-center gap-2">
-                <div className="text-[10px] font-mono text-muted-foreground text-center leading-tight font-bold">
-                  HTTP
-                </div>
-                <div className={`text-sm font-bold font-mono ${
-                  response.metrics.httpStatus === 200 
-                    ? 'text-foreground' 
-                    : 'text-destructive'
-                }`}>
-                  {response.metrics.httpStatus}
                 </div>
               </div>
             )}
