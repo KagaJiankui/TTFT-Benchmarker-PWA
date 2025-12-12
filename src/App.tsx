@@ -383,8 +383,8 @@ function App() {
                 </Button>
               </div>
 
-              <ScrollArea className="h-[600px]">
-                <div className="space-y-3 pr-4">
+              <ScrollArea className="h-[600px] w-full">
+                <div className="space-y-3 pr-2 w-full max-w-[320px]">
                   {(providers || []).map((provider) => (
                     <ProviderCard
                       key={provider.id}
