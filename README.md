@@ -1,5 +1,8 @@
 # TTFT-PWA：LLM First Token Latency Tester
 
+![Static Badge](https://img.shields.io/badge/build%20with-GitHub%20Spark-blue?style=for-the-badge&logo=github)
+![Static Badge](https://img.shields.io/badge/PWA-supported-olime?style=flat-square)
+
 A TypeScript-built Progressive Web App (PWA) for parallel LLM performance benchmarking. It measures key metrics like Time to First Token (TTFT), tokens per second (TPS), and chain-of-thought timing across multiple LLM providers/models at once.
 
 ## Key User Features
