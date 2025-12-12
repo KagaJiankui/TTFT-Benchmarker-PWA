@@ -1,0 +1,109 @@
+import { Provider, ChatMessage } from './types'
+
+export async function fetchModelsFromProvider(provider: Provider): Promise<string[]> {
+  try {
+    const url = new URL('/v1/models', provider.endpoint).href
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${provider.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch models: ${response.statusText}`)
+    }
+
+    const data = await response.json()
+    
+    if (data.data && Array.isArray(data.data)) {
+      return data.data.map((model: any) => model.id || model.model || '')
+    }
+    
+    return []
+  } catch (error) {
+    console.error('Error fetching models:', error)
+    throw error
+  }
+}
+
+export async function* streamChatCompletion(
+  provider: Provider,
+  modelId: string,
+  messages: ChatMessage[]
+): AsyncGenerator<string, void, unknown> {
+  const url = new URL('/v1/chat/completions', provider.endpoint).href
+  
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${provider.apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: modelId,
+      messages,
+      stream: true,
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`API Error: ${response.status} ${response.statusText}`)
+  }
+
+  const reader = response.body?.getReader()
+  if (!reader) {
+    throw new Error('No response body')
+  }
+
+  const decoder = new TextDecoder()
+  let buffer = ''
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      buffer = lines.pop() || ''
+
+      for (const line of lines) {
+        const trimmed = line.trim()
+        if (!trimmed || trimmed === 'data: [DONE]') continue
+        
+        if (trimmed.startsWith('data: ')) {
+          try {
+            const json = JSON.parse(trimmed.slice(6))
+            const delta = json.choices?.[0]?.delta
+            
+            if (delta?.content) {
+              yield delta.content
+            }
+          } catch (e) {
+            console.warn('Failed to parse SSE:', trimmed)
+          }
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock()
+  }
+}
+
+export function calculateTPS(tokens: number, startTime: number, endTime: number): number {
+  const durationMs = endTime - startTime
+  if (durationMs <= 0) return 0
+  return (tokens / durationMs) * 1000
+}
+
+export function formatDuration(ms: number): string {
+  if (ms < 1000) {
+    return `${ms.toFixed(0)}ms`
+  }
+  return `${(ms / 1000).toFixed(2)}s`
+}
+
+export function estimateTokenCount(text: string): number {
+  return Math.ceil(text.length / 4)
+}
