@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { Plus, Play, X, Download } from '@phosphor-icons/react'
+import { Plus, Play, X } from '@phosphor-icons/react'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
 import { ProviderDialog } from '@/components/ProviderDialog'
@@ -35,7 +35,24 @@ function App() {
   const responsePanelRef = useRef<HTMLDivElement>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
   
-  const { installPrompt, isInstalled, promptInstall } = useInstallPrompt()
+  const { installPrompt, isInstalled, promptInstall, showInstallBanner, dismissBanner } = useInstallPrompt()
+  
+  useEffect(() => {
+    if (showInstallBanner && installPrompt) {
+      toast('Install LLM Benchmark', {
+        description: 'Add this app to your home screen for quick access and offline use',
+        duration: Infinity,
+        action: {
+          label: 'Install',
+          onClick: () => {
+            promptInstall()
+          },
+        },
+        onDismiss: dismissBanner,
+        onAutoClose: dismissBanner,
+      })
+    }
+  }, [showInstallBanner, installPrompt, promptInstall, dismissBanner])
 
   const handleSaveProvider = (providerData: Omit<Provider, 'id'>) => {
     setProviders((current) => {
@@ -361,24 +378,11 @@ function App() {
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-[1800px] mx-auto space-y-6">
         <header className="border-b-2 border-foreground pb-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">LLM BENCHMARK</h1>
-              <p className="text-sm text-muted-foreground">
-                Precision model comparison with first token latency and TPS metrics
-              </p>
-            </div>
-            {installPrompt && !isInstalled && (
-              <Button
-                onClick={promptInstall}
-                variant="outline"
-                size="sm"
-                className="gap-2 border-2 border-foreground"
-              >
-                <Download className="h-4 w-4" weight="bold" />
-                Install App
-              </Button>
-            )}
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">LLM BENCHMARK</h1>
+            <p className="text-sm text-muted-foreground">
+              Precision model comparison with first token latency and TPS metrics
+            </p>
           </div>
         </header>
 

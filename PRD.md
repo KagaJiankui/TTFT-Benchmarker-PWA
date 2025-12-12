@@ -13,11 +13,11 @@ This is a sophisticated benchmarking tool requiring parallel API streaming, prec
 ## Essential Features
 
 ### Progressive Web App (PWA)
-- **Functionality**: Installable web application that works offline and can be added to home screen/desktop
+- **Functionality**: Installable web application that works offline and can be added to home screen/desktop. Shows install toast notification on first visit.
 - **Purpose**: Provide native app-like experience with offline capability for accessing previous configurations
-- **Trigger**: Browser detects PWA capability and shows install prompt; user clicks "Install App" button in header
-- **Progression**: Visit site → Browser shows install prompt or "Install App" button → Click install → App added to home screen/desktop → Launches in standalone mode → Works offline for UI and cached data
-- **Success criteria**: App can be installed on desktop and mobile, launches in standalone mode, shows app icon, maintains user data offline, service worker caches critical assets
+- **Trigger**: On first visit, if browser supports PWA installation, a toast notification appears with install action button
+- **Progression**: First visit → Toast appears with "Install" action → User clicks "Install" → Browser shows install prompt → App added to home screen/desktop → Launches in standalone mode → Works offline for UI and cached data. If dismissed, toast won't show again.
+- **Success criteria**: Toast appears only on first visit, user can install from toast or dismiss it, dismissal is remembered, app can be installed on desktop and mobile, launches in standalone mode, shows app icon, maintains user data offline, service worker caches critical assets
 
 ### Provider Management
 - **Functionality**: Configure API providers with endpoint URLs and API keys, fetch available models from each provider. Intelligent URL handling: extracts version from endpoint (e.g., `/v4`) or defaults to `/v1`, then appends API paths (`/models`, `/chat/completions`)
