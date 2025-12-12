@@ -92,7 +92,7 @@ export function RequestParamsCard({ providerId, params, onUpdate }: RequestParam
   }
 
   return (
-    <Card className="p-3 mt-3">
+    <Card className="p-3 mt-3 border-2 border-foreground/30">
       <div className="flex items-center justify-between gap-2 mb-2">
         <h4 className="text-xs font-semibold text-muted-foreground flex-shrink-0">Request Params</h4>
         <div className="flex gap-1 flex-shrink-0">
@@ -100,7 +100,7 @@ export function RequestParamsCard({ providerId, params, onUpdate }: RequestParam
             <Button
               size="sm"
               variant="ghost"
-              className="h-6 px-2 text-xs"
+              className="h-6 px-2 text-xs border border-foreground/20 transition-all active:scale-95"
               onClick={handleClearAll}
             >
               Clear
@@ -109,7 +109,7 @@ export function RequestParamsCard({ providerId, params, onUpdate }: RequestParam
           <Button
             size="sm"
             variant="ghost"
-            className="h-6 w-6 p-0"
+            className="h-6 w-6 p-0 border border-foreground/20 transition-all active:scale-95"
             onClick={handleAddParam}
           >
             <Plus className="h-3 w-3" />
@@ -133,7 +133,7 @@ export function RequestParamsCard({ providerId, params, onUpdate }: RequestParam
                 onKeyDown={(e) => handleKeyDown(e, index)}
                 onDoubleClick={() => handleDoubleClick(index, 'key')}
                 placeholder="key"
-                className="text-xs h-7 min-w-0 w-20 font-mono"
+                className="text-xs h-7 min-w-0 w-20 font-mono border-2"
               />
               <Input
                 id={`${providerId}-${index}-value`}
@@ -143,12 +143,12 @@ export function RequestParamsCard({ providerId, params, onUpdate }: RequestParam
                 onKeyDown={(e) => handleKeyDown(e, index)}
                 onDoubleClick={() => handleDoubleClick(index, 'value')}
                 placeholder="value"
-                className="text-xs h-7 min-w-0 flex-1 font-mono"
+                className="text-xs h-7 min-w-0 flex-1 font-mono border-2"
               />
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-7 w-7 p-0 flex-shrink-0 text-destructive"
+                className="h-7 w-7 p-0 flex-shrink-0 text-destructive border border-destructive/20 transition-all active:scale-95"
                 onClick={() => handleRemoveParam(index)}
               >
                 <Trash className="h-3 w-3" />

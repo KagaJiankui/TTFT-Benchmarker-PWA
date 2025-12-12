@@ -35,28 +35,28 @@ export function ResponsePanel({ response, displayName }: ResponsePanelProps) {
 
   return (
     <div className="flex flex-col h-[600px]">
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex items-center justify-between border-b-2 border-foreground pb-2">
         <h3 className="font-semibold text-sm font-mono">{displayName}</h3>
         {response.status === 'streaming' && (
-          <Badge className="bg-accent text-accent-foreground animate-pulse">
+          <Badge className="bg-accent text-accent-foreground border-2 border-foreground animate-pulse">
             Streaming...
           </Badge>
         )}
         {response.status === 'complete' && (
-          <Badge variant="outline" className="bg-green-50 border-green-200 text-green-700">
-            Complete
+          <Badge variant="outline" className="border-2 border-foreground">
+            Complete ✓
           </Badge>
         )}
         {response.status === 'error' && (
-          <Badge variant="destructive">Error</Badge>
+          <Badge variant="destructive" className="border-2 border-destructive">Error</Badge>
         )}
       </div>
 
-      <div className="flex-1 flex gap-0 overflow-hidden">
+      <div className="flex-1 flex gap-0 overflow-hidden border-2 border-foreground">
         <ScrollArea className="flex-1">
-          <div className="pr-4">
+          <div className="pr-4 p-4">
             {response.status === 'error' && response.error && (
-              <div className="bg-destructive/10 text-destructive rounded-md p-3 text-sm">
+              <div className="bg-destructive text-destructive-foreground border-2 border-destructive p-3 text-sm">
                 {response.error}
               </div>
             )}
@@ -68,11 +68,20 @@ export function ResponsePanel({ response, displayName }: ResponsePanelProps) {
             )}
 
             {response.thinking && (
-              <div className="relative">
-                <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
-                  若有CoT，显示CoT
+              <div className="relative mb-4">
+                <div className="flex items-center gap-2 mb-2 text-xs font-mono font-bold border-b border-foreground pb-1">
+                  CoT (Chain of Thought)
                 </div>
-                <div className="bg-muted/30 rounded-md p-4 text-sm whitespace-pre-wrap border-l-2 border-purple-400">
+                <div 
+                  className={`bg-muted/50 p-4 text-sm whitespace-pre-wrap border-l-4 transition-all duration-300 ${
+                    response.status === 'streaming' ? 'border-accent animate-pulse' : 'border-foreground'
+                  }`}
+                  style={{
+                    backgroundImage: response.status === 'streaming' 
+                      ? 'repeating-linear-gradient(45deg, transparent, transparent 10px, oklch(0.90 0 0) 10px, oklch(0.90 0 0) 20px)' 
+                      : 'none'
+                  }}
+                >
                   {response.thinking}
                 </div>
               </div>
@@ -80,7 +89,19 @@ export function ResponsePanel({ response, displayName }: ResponsePanelProps) {
 
             {response.content && (
               <div className={response.thinking ? 'mt-0' : ''}>
-                <div className="bg-background rounded-md p-4 text-sm whitespace-pre-wrap">
+                <div className="flex items-center gap-2 mb-2 text-xs font-mono font-bold border-b border-foreground pb-1">
+                  Response
+                </div>
+                <div 
+                  className={`bg-background p-4 text-sm whitespace-pre-wrap border-l-4 transition-all duration-300 ${
+                    response.status === 'streaming' ? 'border-accent animate-pulse' : 'border-foreground'
+                  }`}
+                  style={{
+                    backgroundImage: response.status === 'streaming' 
+                      ? 'repeating-linear-gradient(90deg, transparent, transparent 10px, oklch(0.96 0 0) 10px, oklch(0.96 0 0) 20px)' 
+                      : 'none'
+                  }}
+                >
                   {response.content}
                 </div>
               </div>
@@ -88,11 +109,11 @@ export function ResponsePanel({ response, displayName }: ResponsePanelProps) {
           </div>
         </ScrollArea>
 
-        <div className="flex flex-col border-l border-border w-24 flex-shrink-0">
+        <div className="flex flex-col border-l-2 border-foreground w-24 flex-shrink-0 bg-muted/10">
           <div className="flex-1 flex flex-col items-center justify-start gap-6 py-4 px-2">
             {ttft !== null && (
               <div className="flex flex-col items-center gap-1">
-                <div className="text-[10px] font-mono text-blue-600 font-semibold whitespace-nowrap">
+                <div className="text-[10px] font-mono font-bold whitespace-nowrap">
                   TTFT
                 </div>
                 <div className="text-xs font-mono text-muted-foreground">
@@ -102,8 +123,8 @@ export function ResponsePanel({ response, displayName }: ResponsePanelProps) {
             )}
 
             {response.thinking && cotDuration !== null && (
-              <div className="flex-1 flex flex-col items-center justify-center border-t border-b border-purple-200 py-4 min-h-[100px] relative">
-                <div className="absolute top-2 text-[10px] font-mono text-purple-600 font-semibold whitespace-nowrap">
+              <div className="flex-1 flex flex-col items-center justify-center border-t-2 border-b-2 border-foreground py-4 min-h-[100px] relative w-full">
+                <div className="absolute top-2 text-[10px] font-mono font-bold whitespace-nowrap">
                   CoT
                 </div>
                 <div className="text-xs font-mono text-muted-foreground mt-4">
@@ -116,7 +137,7 @@ export function ResponsePanel({ response, displayName }: ResponsePanelProps) {
               <>
                 {contentTTFT !== null && (
                   <div className="flex flex-col items-center gap-1">
-                    <div className="text-[10px] font-mono text-green-600 font-semibold whitespace-nowrap text-center">
+                    <div className="text-[10px] font-mono font-bold whitespace-nowrap text-center">
                       正文TTFT
                     </div>
                     <div className="text-xs font-mono text-muted-foreground">
@@ -125,8 +146,8 @@ export function ResponsePanel({ response, displayName }: ResponsePanelProps) {
                   </div>
                 )}
 
-                <div className="flex-1 flex flex-col items-center justify-center border-t border-b border-green-200 py-4 min-h-[120px] relative">
-                  <div className="absolute top-2 text-[10px] font-mono text-green-600 font-semibold whitespace-nowrap text-center">
+                <div className="flex-1 flex flex-col items-center justify-center border-t-2 border-b-2 border-foreground py-4 min-h-[120px] relative w-full">
+                  <div className="absolute top-2 text-[10px] font-mono font-bold whitespace-nowrap text-center">
                     正文
                   </div>
                   {contentDuration !== null && (
@@ -139,8 +160,8 @@ export function ResponsePanel({ response, displayName }: ResponsePanelProps) {
             )}
 
             {totalDuration !== null && (
-              <div className="flex flex-col items-center gap-1 mt-auto pt-4 border-t">
-                <div className="text-[10px] font-mono text-red-600 font-semibold whitespace-nowrap">
+              <div className="flex flex-col items-center gap-1 mt-auto pt-4 border-t-2 border-foreground w-full">
+                <div className="text-[10px] font-mono font-bold whitespace-nowrap">
                   总时长
                 </div>
                 <div className="text-xs font-mono text-muted-foreground">
@@ -151,17 +172,17 @@ export function ResponsePanel({ response, displayName }: ResponsePanelProps) {
           </div>
         </div>
 
-        <div className="flex flex-col border-l border-border w-20 flex-shrink-0 bg-muted/20">
+        <div className="flex flex-col border-l-2 border-foreground w-20 flex-shrink-0 bg-muted/20">
           <div className="flex-1 flex flex-col items-center justify-start py-4 px-2">
             {response.metrics.httpStatus && (
               <div className="flex flex-col items-center gap-2">
-                <div className="text-[10px] font-mono text-muted-foreground text-center leading-tight">
+                <div className="text-[10px] font-mono text-muted-foreground text-center leading-tight font-bold">
                   HTTP
                 </div>
                 <div className={`text-sm font-bold font-mono ${
                   response.metrics.httpStatus === 200 
-                    ? 'text-green-600' 
-                    : 'text-red-600'
+                    ? 'text-foreground' 
+                    : 'text-destructive'
                 }`}>
                   {response.metrics.httpStatus}
                 </div>

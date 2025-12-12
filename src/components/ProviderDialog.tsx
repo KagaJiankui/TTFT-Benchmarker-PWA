@@ -42,9 +42,9 @@ export function ProviderDialog({ open, onClose, onSave, provider }: ProviderDial
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent>
+      <DialogContent className="border-2 border-foreground">
         <DialogHeader>
-          <DialogTitle>{provider ? 'Edit Provider' : 'Add Provider'}</DialogTitle>
+          <DialogTitle className="font-bold">{provider ? 'Edit Provider' : 'Add Provider'}</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4 py-4">
@@ -55,6 +55,7 @@ export function ProviderDialog({ open, onClose, onSave, provider }: ProviderDial
               placeholder="e.g., OpenAI, Anthropic"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              className="border-2"
             />
           </div>
           
@@ -65,6 +66,7 @@ export function ProviderDialog({ open, onClose, onSave, provider }: ProviderDial
               placeholder="https://api.openai.com"
               value={endpoint}
               onChange={(e) => setEndpoint(e.target.value)}
+              className="border-2"
             />
             <p className="text-xs text-muted-foreground">
               Base URL. Include /v4 for custom versions, defaults to /v1
@@ -79,15 +81,16 @@ export function ProviderDialog({ open, onClose, onSave, provider }: ProviderDial
               placeholder="sk-..."
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
+              className="border-2"
             />
           </div>
         </div>
         
         <DialogFooter>
-          <Button variant="outline" onClick={handleClose}>
+          <Button variant="outline" onClick={handleClose} className="border-2 transition-all active:scale-95">
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={!name || !endpoint || !apiKey}>
+          <Button onClick={handleSave} disabled={!name || !endpoint || !apiKey} className="border-2 border-foreground transition-all active:scale-95">
             Save
           </Button>
         </DialogFooter>

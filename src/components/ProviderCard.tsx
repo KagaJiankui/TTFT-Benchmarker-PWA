@@ -76,7 +76,7 @@ export function ProviderCard({
   }, [availableModels, searchPattern, sortAlphabetically])
 
   return (
-    <Card className="p-4">
+    <Card className="p-4 border-2 border-foreground">
       <div className="flex items-start justify-between mb-3">
         <div>
           <h3 className="font-semibold text-sm">{provider.name}</h3>
@@ -88,7 +88,7 @@ export function ProviderCard({
           <Button
             size="icon"
             variant="ghost"
-            className="h-7 w-7"
+            className="h-7 w-7 border border-foreground/20 transition-all active:scale-95"
             onClick={() => onEdit(provider)}
           >
             <GearSix className="h-4 w-4" />
@@ -96,7 +96,7 @@ export function ProviderCard({
           <Button
             size="icon"
             variant="ghost"
-            className="h-7 w-7 text-destructive"
+            className="h-7 w-7 border border-destructive/20 text-destructive transition-all active:scale-95"
             onClick={() => onDelete(provider.id)}
           >
             <Trash className="h-4 w-4" />
@@ -108,7 +108,7 @@ export function ProviderCard({
         <Button
           size="sm"
           variant="outline"
-          className="w-full"
+          className="w-full border-2 transition-all active:scale-95"
           onClick={handleFetchModels}
           disabled={loading}
         >
@@ -124,7 +124,7 @@ export function ProviderCard({
                   placeholder="Search (regex supported)"
                   value={searchPattern}
                   onChange={(e) => setSearchPattern(e.target.value)}
-                  className="text-xs pl-7 pr-7"
+                  className="text-xs pl-7 pr-7 border-2"
                 />
                 {searchPattern && (
                   <Button
@@ -140,14 +140,14 @@ export function ProviderCard({
               <Button
                 size="icon"
                 variant={sortAlphabetically ? 'default' : 'outline'}
-                className="h-8 w-8"
+                className="h-8 w-8 border-2 transition-all active:scale-95"
                 onClick={() => setSortAlphabetically(!sortAlphabetically)}
               >
                 <SortAscending className="h-4 w-4" />
               </Button>
             </div>
 
-            <ScrollArea className="h-48 border rounded-md p-2">
+            <ScrollArea className="h-48 border-2 border-foreground p-2">
               <div className="flex flex-wrap gap-1.5">
                 {filteredAndSortedModels.map((modelId) => (
                   <Badge
@@ -155,7 +155,7 @@ export function ProviderCard({
                     draggable
                     onDragStart={() => onDragStart(provider, modelId)}
                     variant="secondary"
-                    className="cursor-move hover:bg-accent transition-colors text-xs px-2 py-1 font-mono"
+                    className="cursor-move hover:bg-accent hover:text-accent-foreground transition-all active:scale-95 text-xs px-2 py-1 font-mono border border-foreground/20"
                   >
                     {modelId}
                   </Badge>
@@ -179,13 +179,14 @@ export function ProviderCard({
             value={manualModel}
             onChange={(e) => setManualModel(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAddManualModel()}
-            className="text-xs"
+            className="text-xs border-2"
           />
           <Button
             size="sm"
             variant="outline"
             onClick={handleAddManualModel}
             disabled={!manualModel.trim()}
+            className="border-2 transition-all active:scale-95"
           >
             <Plus className="h-3 w-3" />
           </Button>

@@ -6,12 +6,11 @@ import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Plus, Play } from '@phosphor-icons/react'
+import { Plus, Play, X } from '@phosphor-icons/react'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
 import { ProviderDialog } from '@/components/ProviderDialog'
 import { ProviderCard } from '@/components/ProviderCard'
-import { ModelSlotCard } from '@/components/ModelSlotCard'
 import { ResponsePanel } from '@/components/ResponsePanel'
 import { Provider, ModelSlot, ModelResponse } from '@/lib/types'
 import { streamChatCompletion, estimateTokenCount } from '@/lib/api'
@@ -19,10 +18,7 @@ import { streamChatCompletion, estimateTokenCount } from '@/lib/api'
 function App() {
   const [providers, setProviders] = useKV<Provider[]>('llm-providers', [])
   const [availableModels, setAvailableModels] = useKV<Record<string, string[]>>('provider-models', {})
-  const [modelSlots, setModelSlots] = useKV<ModelSlot[]>('model-slots', [
-    { id: '1' }, { id: '2' }, { id: '3' }, { id: '4' },
-    { id: '5' }, { id: '6' }, { id: '7' }, { id: '8' },
-  ])
+  const [modelSlots, setModelSlots] = useKV<ModelSlot[]>('model-slots', [])
   
   const [systemPrompt, setSystemPrompt] = useState('')
   const [userPrompt, setUserPrompt] = useState('')
@@ -34,6 +30,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<string>('0')
   
   const dragDataRef = useRef<{ provider: Provider; modelId: string } | null>(null)
+  const responsePanelRef = useRef<HTMLDivElement>(null)
 
   const handleSaveProvider = (providerData: Omit<Provider, 'id'>) => {
     setProviders((current) => {
@@ -74,33 +71,51 @@ function App() {
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
+    e.currentTarget.classList.add('bg-accent/20')
   }
 
-  const handleDrop = (slotId: string) => {
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.currentTarget.classList.remove('bg-accent/20')
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.currentTarget.classList.remove('bg-accent/20')
+    
     if (!dragDataRef.current) return
 
     const { provider, modelId } = dragDataRef.current
     
-    setModelSlots((current) =>
-      (current || []).map(slot =>
-        slot.id === slotId
-          ? {
-              id: slot.id,
-              provider,
-              modelId,
-              displayName: `${provider.name} / ${modelId}`,
-            }
-          : slot
-      )
-    )
-
+    const newSlot: ModelSlot = {
+      id: Date.now().toString(),
+      provider,
+      modelId,
+      displayName: `${provider.name} / ${modelId}`,
+    }
+    
+    setModelSlots((currentSlots) => {
+      const slots = currentSlots || []
+      setActiveTab(slots.length.toString())
+      return [...slots, newSlot]
+    })
+    
     dragDataRef.current = null
   }
 
   const handleRemoveSlot = (slotId: string) => {
     setModelSlots((current) =>
-      (current || []).map(slot => (slot.id === slotId ? { id: slot.id } : slot))
+      (current || []).filter(slot => slot.id !== slotId)
     )
+    
+    setResponses((current) => 
+      current.filter(r => r.slotId !== slotId)
+    )
+    
+    const currentSlots = modelSlots || []
+    const removingIndex = currentSlots.findIndex(s => s.id === slotId)
+    if (activeTab === removingIndex.toString() && currentSlots.length > 1) {
+      setActiveTab('0')
+    }
   }
 
   const handleUpdateProviderParams = (providerId: string, params: Record<string, any>) => {
@@ -306,16 +321,16 @@ function App() {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-[1800px] mx-auto space-y-6">
-        <header>
-          <h1 className="text-2xl font-bold tracking-tight">LLM Benchmark</h1>
+        <header className="border-b-2 border-foreground pb-4">
+          <h1 className="text-2xl font-bold tracking-tight">LLM BENCHMARK</h1>
           <p className="text-sm text-muted-foreground">
             Precision model comparison with first token latency and TPS metrics
           </p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[480px_1fr] gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6">
           <div className="space-y-4">
-            <Card className="p-4">
+            <Card className="p-4 border-2 border-foreground">
               <Label htmlFor="system-prompt" className="text-sm font-semibold">System Prompt</Label>
               {systemPromptExpanded ? (
                 <Textarea
@@ -325,17 +340,23 @@ function App() {
                   onChange={(e) => setSystemPrompt(e.target.value)}
                   onFocus={() => setSystemPromptExpanded(true)}
                   onBlur={() => setSystemPromptExpanded(false)}
-                  className="mt-2 resize-none transition-all duration-300 min-h-32"
+                  className="mt-2 resize-none transition-all duration-300 min-h-32 border-2"
                   autoFocus
                 />
               ) : (
                 <div
                   onClick={() => setSystemPromptExpanded(true)}
-                  className="mt-2 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm transition-colors cursor-text hover:border-ring min-h-10 overflow-hidden whitespace-nowrap text-ellipsis"
+                  className="mt-2 w-full border-2 border-input bg-transparent px-3 py-2 text-base shadow-sm transition-colors cursor-text hover:border-ring overflow-hidden text-ellipsis"
+                  style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 5,
+                    WebkitBoxOrient: 'vertical',
+                    minHeight: '5.5rem',
+                  }}
                 >
                   {systemPrompt ? (
-                    <span className="text-foreground">
-                      {systemPrompt.split('\n')[0]}
+                    <span className="text-foreground whitespace-pre-wrap">
+                      {systemPrompt}
                     </span>
                   ) : (
                     <span className="text-muted-foreground">
@@ -346,61 +367,46 @@ function App() {
               )}
             </Card>
 
-            <Card className="p-4">
-              <h3 className="text-sm font-semibold mb-3">Model Configuration</h3>
-              
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                {(modelSlots || []).map((slot) => (
-                  <ModelSlotCard
-                    key={slot.id}
-                    slot={slot}
-                    onRemove={handleRemoveSlot}
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop}
-                  />
-                ))}
+            <Card className="p-4 border-2 border-foreground">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-semibold">Providers</h4>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setEditingProvider(undefined)
+                    setProviderDialogOpen(true)
+                  }}
+                  className="transition-all active:scale-95 border-2 border-foreground"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add
+                </Button>
               </div>
 
-              <div className="pt-3 border-t space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-semibold">Providers</h4>
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      setEditingProvider(undefined)
-                      setProviderDialogOpen(true)
-                    }}
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add
-                  </Button>
+              <ScrollArea className="h-[600px]">
+                <div className="space-y-3 pr-4">
+                  {(providers || []).map((provider) => (
+                    <ProviderCard
+                      key={provider.id}
+                      provider={provider}
+                      availableModels={(availableModels || {})[provider.id] || []}
+                      onEdit={(p) => {
+                        setEditingProvider(p)
+                        setProviderDialogOpen(true)
+                      }}
+                      onDelete={handleDeleteProvider}
+                      onFetchModels={handleFetchModels}
+                      onDragStart={handleDragStart}
+                      onUpdateParams={handleUpdateProviderParams}
+                    />
+                  ))}
                 </div>
-
-                <ScrollArea className="h-[400px]">
-                  <div className="space-y-3 pr-4">
-                    {(providers || []).map((provider) => (
-                      <ProviderCard
-                        key={provider.id}
-                        provider={provider}
-                        availableModels={(availableModels || {})[provider.id] || []}
-                        onEdit={(p) => {
-                          setEditingProvider(p)
-                          setProviderDialogOpen(true)
-                        }}
-                        onDelete={handleDeleteProvider}
-                        onFetchModels={handleFetchModels}
-                        onDragStart={handleDragStart}
-                        onUpdateParams={handleUpdateProviderParams}
-                      />
-                    ))}
-                  </div>
-                </ScrollArea>
-              </div>
+              </ScrollArea>
             </Card>
           </div>
 
           <div className="space-y-4">
-            <Card className="p-4">
+            <Card className="p-4 border-2 border-foreground">
               <Label htmlFor="user-prompt" className="text-sm font-semibold">
                 User Prompt
               </Label>
@@ -409,13 +415,13 @@ function App() {
                 placeholder="Enter your prompt to compare across models"
                 value={userPrompt}
                 onChange={(e) => setUserPrompt(e.target.value)}
-                className="mt-2 min-h-24 resize-none"
+                className="mt-2 min-h-24 resize-none border-2"
               />
               <div className="flex justify-end mt-3">
                 <Button
                   onClick={handleRunComparison}
                   disabled={isRunning || activeSlots.length === 0}
-                  className="gap-2"
+                  className="gap-2 transition-all active:scale-95 border-2 border-foreground hover:bg-accent hover:text-accent-foreground"
                 >
                   <Play className="h-4 w-4" weight="fill" />
                   {isRunning ? 'Running...' : 'Run Comparison'}
@@ -423,26 +429,47 @@ function App() {
               </div>
             </Card>
 
-            {responses.length > 0 && (
-              <Card className="p-4">
+            <Card 
+              ref={responsePanelRef}
+              className="p-4 border-2 border-foreground min-h-[600px] transition-all duration-300"
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              {activeSlots.length === 0 ? (
+                <div className="h-full min-h-[500px] flex items-center justify-center border-2 border-dashed border-muted-foreground/30">
+                  <p className="text-muted-foreground text-center">
+                    Drag models from providers to create comparison tabs
+                  </p>
+                </div>
+              ) : (
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <div className="w-full overflow-x-auto">
-                    <TabsList className="inline-flex h-auto flex-wrap min-w-full justify-start bg-muted/50 gap-1 p-1">
+                  <div className="w-full overflow-x-auto border-b-2 border-foreground mb-4">
+                    <TabsList className="inline-flex h-auto flex-wrap min-w-full justify-start bg-transparent gap-0 p-0 border-0">
                       {activeSlots.map((slot, index) => {
                         const response = responses.find(r => r.slotId === slot.id)
                         return (
                           <TabsTrigger
                             key={slot.id}
                             value={index.toString()}
-                            className="flex-shrink-0"
+                            className="flex-shrink-0 group relative border-2 border-b-0 border-foreground data-[state=active]:bg-foreground data-[state=active]:text-background px-3 py-2 h-auto"
                           >
-                            <span className="truncate max-w-[200px]">{slot.displayName || `Model ${index + 1}`}</span>
+                            <span className="truncate max-w-[200px] text-xs font-mono">{slot.displayName || `Model ${index + 1}`}</span>
                             {response?.status === 'streaming' && (
-                              <span className="ml-2 inline-block w-2 h-2 bg-current rounded-full animate-pulse" />
+                              <span className="ml-2 inline-block w-2 h-2 bg-current animate-pulse" />
                             )}
                             {response?.status === 'complete' && (
                               <span className="ml-2">✓</span>
                             )}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleRemoveSlot(slot.id)
+                              }}
+                              className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
                           </TabsTrigger>
                         )
                       })}
@@ -451,22 +478,26 @@ function App() {
                   
                   <div className="mt-4">
                     {activeSlots.map((slot, index) => {
-                      const response = responses.find(r => r.slotId === slot.id)
+                      const response = responses.find(r => r.slotId === slot.id) || {
+                        slotId: slot.id,
+                        content: '',
+                        thinking: '',
+                        metrics: {},
+                        status: 'idle' as const,
+                      }
                       return (
                         <TabsContent key={slot.id} value={index.toString()} className="m-0">
-                          {response && (
-                            <ResponsePanel
-                              response={response}
-                              displayName={slot.displayName || ''}
-                            />
-                          )}
+                          <ResponsePanel
+                            response={response}
+                            displayName={slot.displayName || ''}
+                          />
                         </TabsContent>
                       )
                     })}
                   </div>
                 </Tabs>
-              </Card>
-            )}
+              )}
+            </Card>
           </div>
         </div>
       </div>
