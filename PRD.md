@@ -13,11 +13,11 @@ This is a sophisticated benchmarking tool requiring parallel API streaming, prec
 ## Essential Features
 
 ### Provider Management
-- **Functionality**: Configure API providers with endpoint URLs and API keys, fetch available models from each provider
-- **Purpose**: Support multiple LLM providers (OpenAI, Anthropic, local endpoints, etc.) with /chat/completions compatible APIs
+- **Functionality**: Configure API providers with endpoint URLs and API keys, fetch available models from each provider. Intelligent URL handling: extracts version from endpoint (e.g., `/v4`) or defaults to `/v1`, then appends API paths (`/models`, `/chat/completions`)
+- **Purpose**: Support multiple LLM providers (OpenAI, Anthropic, local endpoints, etc.) with /chat/completions compatible APIs and custom API versions
 - **Trigger**: User clicks "Add Provider" in the configuration panel
-- **Progression**: Click add → Enter provider name + API endpoint + API key → GET /models to fetch available models → Display models under provider → Drag models to active comparison slots
-- **Success criteria**: Provider connects successfully, models list populates, models can be dragged to comparison tabs
+- **Progression**: Click add → Enter provider name + API endpoint (e.g., `https://open.bigmodel.cn/api/paas/v4` or `https://api.openai.com`) + API key → System builds URLs: if endpoint ends with `/v{number}` use it, else append `/v1` → GET {endpoint}/models to fetch available models → Display models under provider → Drag models to active comparison slots
+- **Success criteria**: Provider connects successfully with correct version handling (v1 default, v4+ when specified), models list populates, models can be dragged to comparison tabs
 
 ### Model Configuration (Drag-and-Drop)
 - **Functionality**: Manage up to 8+ model slots with drag-and-drop from provider model lists

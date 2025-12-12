@@ -1,8 +1,23 @@
 import { Provider, ChatMessage } from './types'
 
+function buildApiUrl(endpoint: string, apiPath: string): string {
+  let baseUrl = endpoint.trim()
+  if (baseUrl.endsWith('/')) {
+    baseUrl = baseUrl.slice(0, -1)
+  }
+
+  const versionMatch = baseUrl.match(/\/v\d+$/)
+  
+  if (versionMatch) {
+    return `${baseUrl}${apiPath}`
+  } else {
+    return `${baseUrl}/v1${apiPath}`
+  }
+}
+
 export async function fetchModelsFromProvider(provider: Provider): Promise<string[]> {
   try {
-    const url = new URL('/v1/models', provider.endpoint).href
+    const url = buildApiUrl(provider.endpoint, '/models')
     const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${provider.apiKey}`,
@@ -32,7 +47,7 @@ export async function* streamChatCompletion(
   modelId: string,
   messages: ChatMessage[]
 ): AsyncGenerator<string, void, unknown> {
-  const url = new URL('/v1/chat/completions', provider.endpoint).href
+  const url = buildApiUrl(provider.endpoint, '/chat/completions')
   
   const response = await fetch(url, {
     method: 'POST',

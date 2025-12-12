@@ -58,7 +58,7 @@ export function ProviderDialog({ open, onClose, onSave, provider }: ProviderDial
               onChange={(e) => setEndpoint(e.target.value)}
             />
             <p className="text-xs text-muted-foreground">
-              Base URL (without /v1/chat/completions)
+              Base URL. Include /v4 for custom versions, defaults to /v1
             </p>
           </div>
           
