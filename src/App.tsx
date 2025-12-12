@@ -316,9 +316,7 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
           <div className="space-y-4">
             <Card className="p-4">
-              <Label htmlFor="system-prompt" className="text-sm font-semibold">
-                System Prompt
-              </Label>
+              <Label htmlFor="system-prompt" className="text-sm font-semibold">System Prompt</Label>
               {systemPromptExpanded ? (
                 <Textarea
                   id="system-prompt"
@@ -472,7 +470,6 @@ function App() {
           </div>
         </div>
       </div>
-
       <ProviderDialog
         open={providerDialogOpen}
         onClose={() => {
@@ -482,10 +479,9 @@ function App() {
         onSave={handleSaveProvider}
         provider={editingProvider}
       />
-
       <Toaster />
     </div>
-  )
+  );
 }
 
 export default App
