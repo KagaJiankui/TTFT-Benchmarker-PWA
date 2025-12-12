@@ -270,17 +270,33 @@ function App() {
               <Label htmlFor="system-prompt" className="text-sm font-semibold">
                 System Prompt
               </Label>
-              <Textarea
-                id="system-prompt"
-                placeholder="Enter system prompt (optional)"
-                value={systemPrompt}
-                onChange={(e) => setSystemPrompt(e.target.value)}
-                onFocus={() => setSystemPromptExpanded(true)}
-                onBlur={() => setSystemPromptExpanded(false)}
-                className={`mt-2 resize-none transition-all duration-300 ${
-                  systemPromptExpanded ? 'min-h-32' : 'min-h-10'
-                }`}
-              />
+              {systemPromptExpanded ? (
+                <Textarea
+                  id="system-prompt"
+                  placeholder="Enter system prompt (optional)"
+                  value={systemPrompt}
+                  onChange={(e) => setSystemPrompt(e.target.value)}
+                  onFocus={() => setSystemPromptExpanded(true)}
+                  onBlur={() => setSystemPromptExpanded(false)}
+                  className="mt-2 resize-none transition-all duration-300 min-h-32"
+                  autoFocus
+                />
+              ) : (
+                <div
+                  onClick={() => setSystemPromptExpanded(true)}
+                  className="mt-2 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm transition-colors cursor-text hover:border-ring min-h-10 overflow-hidden whitespace-nowrap text-ellipsis"
+                >
+                  {systemPrompt ? (
+                    <span className="text-foreground">
+                      {systemPrompt.split('\n')[0]}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">
+                      Enter system prompt (optional)
+                    </span>
+                  )}
+                </div>
+              )}
             </Card>
 
             <Card className="p-4">
