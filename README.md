@@ -1,23 +1,18 @@
-# ✨ Welcome to Your Spark Template!
-You've just launched your brand-new Spark Template Codespace — everything’s fired up and ready for you to explore, build, and create with Spark!
+# TTFT-PWA：LLM First Token Latency Tester
 
-This template is your blank canvas. It comes with a minimal setup to help you get started quickly with Spark development.
+A TypeScript-built Progressive Web App (PWA) for parallel LLM performance benchmarking. It measures key metrics like Time to First Token (TTFT), tokens per second (TPS), and chain-of-thought timing across multiple LLM providers/models at once.
 
-🚀 What's Inside?
-- A clean, minimal Spark environment
-- Pre-configured for local development
-- Ready to scale with your ideas
-  
-🧠 What Can You Do?
+## Key User Features
 
-Right now, this is just a starting point — the perfect place to begin building and testing your Spark applications.
+- **PWA Access**: Install on desktop/mobile, use offline (access cached configs), and run in standalone mode.
+- **Easy Provider & Model Setup**: Add LLM providers via API endpoints/keys, auto-fetch available models, and manage up to 8+ comparison slots with drag-and-drop.
+- **Parallel Testing**: Send the same prompt to all configured models simultaneously (streaming responses) and abort tests mid-run if needed.
+- **Precise Metric Tracking**: View real-time, millisecond-accurate metrics: TTFT, chain-of-thought time, content TPS, and total response time.
+- **Clear Response Display**: Switch between model tabs to see streaming responses, with clear separation of chain-of-thought/content and inline timing notes.
 
-🧹 Just Exploring?
-No problem! If you were just checking things out and don’t need to keep this code:
+## User-Friendly Edge Handling
 
-- Simply delete your Spark.
-- Everything will be cleaned up — no traces left behind.
-
-📄 License For Spark Template Resources 
-
-The Spark Template files and resources from GitHub are licensed under the terms of the MIT license, Copyright GitHub, Inc.
+- API failures/slow responses don’t affect other models (error messages shown per model).
+- Manually enter model IDs if auto-fetch fails.
+- Preserve partial responses if tests are aborted.
+- Offline mode disables API calls but keeps cached configs accessible.
