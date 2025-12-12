@@ -47,6 +47,11 @@ export function ResponsePanel({ response, displayName }: ResponsePanelProps) {
             {response.metrics.httpStatus ? `HTTP ${response.metrics.httpStatus} · ` : ''}Complete ✓
           </Badge>
         )}
+        {response.status === 'aborted' && (
+          <Badge variant="secondary" className="border-2 border-foreground">
+            {response.metrics.httpStatus ? `HTTP ${response.metrics.httpStatus} · ` : ''}Aborted
+          </Badge>
+        )}
         {response.status === 'error' && (
           <Badge variant="destructive" className="border-2 border-destructive">
             {response.metrics.httpStatus ? `HTTP ${response.metrics.httpStatus} · ` : ''}Error
@@ -57,7 +62,7 @@ export function ResponsePanel({ response, displayName }: ResponsePanelProps) {
       <div className="flex-1 flex gap-0 overflow-hidden border-2 border-foreground">
         <ScrollArea className="flex-1">
           <div className="pr-4 p-4">
-            {response.status === 'error' && response.error && (
+            {(response.status === 'error' || response.status === 'aborted') && response.error && (
               <div className="bg-destructive text-destructive-foreground border-2 border-destructive p-3 text-sm">
                 {response.error}
               </div>

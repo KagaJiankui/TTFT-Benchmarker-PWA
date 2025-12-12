@@ -37,7 +37,7 @@ export interface ModelResponse {
   content: string
   thinking: string
   metrics: TimingMetrics
-  status: 'idle' | 'streaming' | 'complete' | 'error'
+  status: 'idle' | 'streaming' | 'complete' | 'error' | 'aborted'
   error?: string
 }
 

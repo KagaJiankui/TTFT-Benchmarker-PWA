@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { Plus, Play, X } from '@phosphor-icons/react'
+import { Plus, Play, X, Download } from '@phosphor-icons/react'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
 import { ProviderDialog } from '@/components/ProviderDialog'
@@ -15,6 +15,7 @@ import { ProviderCard } from '@/components/ProviderCard'
 import { ResponsePanel } from '@/components/ResponsePanel'
 import { Provider, ModelSlot, ModelResponse } from '@/lib/types'
 import { streamChatCompletion, estimateTokenCount } from '@/lib/api'
+import { useInstallPrompt } from '@/hooks/use-install-prompt'
 
 function App() {
   const [providers, setProviders] = useKV<Provider[]>('llm-providers', [])
@@ -32,6 +33,9 @@ function App() {
   
   const dragDataRef = useRef<{ provider: Provider; modelId: string } | null>(null)
   const responsePanelRef = useRef<HTMLDivElement>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
+  
+  const { installPrompt, isInstalled, promptInstall } = useInstallPrompt()
 
   const handleSaveProvider = (providerData: Omit<Provider, 'id'>) => {
     setProviders((current) => {
@@ -138,6 +142,23 @@ function App() {
   }
 
   const handleRunComparison = async () => {
+    if (isRunning && abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+      setIsRunning(false)
+      
+      setResponses((current) =>
+        current.map(r =>
+          r.status === 'streaming'
+            ? { ...r, status: 'aborted' as const, error: 'Request aborted by user' }
+            : r
+        )
+      )
+      
+      toast.info('Comparison aborted')
+      return
+    }
+
     const activeSlots = (modelSlots || []).filter(slot => slot.provider && slot.modelId)
     
     if (activeSlots.length === 0) {
@@ -152,6 +173,8 @@ function App() {
 
     setIsRunning(true)
     setActiveTab('0')
+    
+    abortControllerRef.current = new AbortController()
     
     const initialResponses: ModelResponse[] = activeSlots.map(slot => ({
       slotId: slot.id,
@@ -178,7 +201,7 @@ function App() {
         let thinkingProcessed = false
         let hasReasoningContent = false
 
-        for await (const data of streamChatCompletion(slot.provider!, slot.modelId!, messages)) {
+        for await (const data of streamChatCompletion(slot.provider!, slot.modelId!, messages, abortControllerRef.current!.signal)) {
           if (data.httpStatus !== undefined) {
             response.metrics.httpStatus = data.httpStatus
             continue
@@ -299,22 +322,37 @@ function App() {
           )
         )
       } catch (error) {
-        setResponses((current) =>
-          current.map(r =>
-            r.slotId === slot.id
-              ? {
-                  ...r,
-                  status: 'error',
-                  error: error instanceof Error ? error.message : 'Unknown error',
-                }
-              : r
+        if (error instanceof Error && error.name === 'AbortError') {
+          setResponses((current) =>
+            current.map(r =>
+              r.slotId === slot.id
+                ? {
+                    ...r,
+                    status: 'aborted',
+                    error: 'Request aborted by user',
+                  }
+                : r
+            )
           )
-        )
+        } else {
+          setResponses((current) =>
+            current.map(r =>
+              r.slotId === slot.id
+                ? {
+                    ...r,
+                    status: 'error',
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                  }
+                : r
+            )
+          )
+        }
       }
     })
 
     await Promise.all(streamPromises)
     setIsRunning(false)
+    abortControllerRef.current = null
   }
 
   const activeSlots = (modelSlots || []).filter(slot => slot.provider && slot.modelId)
@@ -323,10 +361,25 @@ function App() {
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-[1800px] mx-auto space-y-6">
         <header className="border-b-2 border-foreground pb-4">
-          <h1 className="text-2xl font-bold tracking-tight">LLM BENCHMARK</h1>
-          <p className="text-sm text-muted-foreground">
-            Precision model comparison with first token latency and TPS metrics
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">LLM BENCHMARK</h1>
+              <p className="text-sm text-muted-foreground">
+                Precision model comparison with first token latency and TPS metrics
+              </p>
+            </div>
+            {installPrompt && !isInstalled && (
+              <Button
+                onClick={promptInstall}
+                variant="outline"
+                size="sm"
+                className="gap-2 border-2 border-foreground"
+              >
+                <Download className="h-4 w-4" weight="bold" />
+                Install App
+              </Button>
+            )}
+          </div>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6">
@@ -421,11 +474,11 @@ function App() {
               <div className="flex justify-end mt-3">
                 <Button
                   onClick={handleRunComparison}
-                  disabled={isRunning || activeSlots.length === 0}
+                  disabled={activeSlots.length === 0}
                   className="gap-2 transition-all active:scale-95 border-2 border-foreground hover:bg-accent hover:text-accent-foreground"
                 >
                   <Play className="h-4 w-4" weight="fill" />
-                  {isRunning ? 'Running...' : 'Run Comparison'}
+                  {isRunning ? 'Abort Comparison' : 'Run Comparison'}
                 </Button>
               </div>
             </Card>

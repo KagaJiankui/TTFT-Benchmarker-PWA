@@ -12,6 +12,13 @@ This is a sophisticated benchmarking tool requiring parallel API streaming, prec
 
 ## Essential Features
 
+### Progressive Web App (PWA)
+- **Functionality**: Installable web application that works offline and can be added to home screen/desktop
+- **Purpose**: Provide native app-like experience with offline capability for accessing previous configurations
+- **Trigger**: Browser detects PWA capability and shows install prompt; user clicks "Install App" button in header
+- **Progression**: Visit site → Browser shows install prompt or "Install App" button → Click install → App added to home screen/desktop → Launches in standalone mode → Works offline for UI and cached data
+- **Success criteria**: App can be installed on desktop and mobile, launches in standalone mode, shows app icon, maintains user data offline, service worker caches critical assets
+
 ### Provider Management
 - **Functionality**: Configure API providers with endpoint URLs and API keys, fetch available models from each provider. Intelligent URL handling: extracts version from endpoint (e.g., `/v4`) or defaults to `/v1`, then appends API paths (`/models`, `/chat/completions`)
 - **Purpose**: Support multiple LLM providers (OpenAI, Anthropic, local endpoints, etc.) with /chat/completions compatible APIs and custom API versions
@@ -27,11 +34,11 @@ This is a sophisticated benchmarking tool requiring parallel API streaming, prec
 - **Success criteria**: Models can be added via drag-drop or manual entry, up to 8+ slots supported, models persist between sessions
 
 ### Parallel Model Execution
-- **Functionality**: Send identical prompts to all configured models simultaneously with streaming responses
-- **Purpose**: Fair comparison with same input conditions
-- **Trigger**: User enters prompts and clicks "Run Comparison"
-- **Progression**: Enter system prompt → Enter user prompt → Click run → All models stream responses in parallel → Metrics update in real-time
-- **Success criteria**: All models receive requests simultaneously, responses stream independently, timing is accurate
+- **Functionality**: Send identical prompts to all configured models simultaneously with streaming responses. Can abort all running comparisons mid-stream.
+- **Purpose**: Fair comparison with same input conditions, with ability to cancel long-running or problematic requests
+- **Trigger**: User enters prompts and clicks "Run Comparison" to start, or clicks again to abort
+- **Progression**: Enter system prompt → Enter user prompt → Click run → All models stream responses in parallel → Metrics update in real-time → (Optional) Click "Abort Comparison" to cancel all streaming requests → Aborted models show "Aborted" status
+- **Success criteria**: All models receive requests simultaneously, responses stream independently, timing is accurate, abort functionality cancels all active streams cleanly
 
 ### Precision Timing Metrics
 - **Functionality**: Measure and display: Time to First Token (TTFT), Chain-of-Thought time (if present), Content TTFT, Content TPS, Total time
@@ -50,11 +57,13 @@ This is a sophisticated benchmarking tool requiring parallel API streaming, prec
 ## Edge Case Handling
 
 - **API Failures**: Display error message in model tab, allow retry without affecting other models
-- **Slow Responses**: Show "waiting..." state, don't block other models, allow cancellation
+- **Slow Responses**: Show "waiting..." state, don't block other models, allow cancellation via abort button
 - **Invalid API Keys**: Show validation error when adding provider, allow editing
 - **Empty Model Lists**: Show manual entry option if GET /models fails
 - **Missing CoT**: Only show CoT metrics when detected, gracefully handle models without thinking sections
 - **Concurrent Requests**: Handle rate limits per provider, queue if necessary
+- **Aborted Requests**: Show "Aborted" status on cancelled model tabs, preserve partial responses if any
+- **Offline Mode**: Show cached provider configurations when offline, disable API calls gracefully
 
 ## Design Direction
 
@@ -128,6 +137,7 @@ Animations should reinforce data flow and state changes without impeding benchma
   - `Clock` for timing metrics
   - `ArrowsDownUp` for drag handle
   - `X` for close/cancel
+  - `Download` for PWA install prompt
 
 - **Spacing**: 
   - Container padding: p-6 (24px) for main areas

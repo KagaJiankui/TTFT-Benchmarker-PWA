@@ -45,7 +45,8 @@ export async function fetchModelsFromProvider(provider: Provider): Promise<strin
 export async function* streamChatCompletion(
   provider: Provider,
   modelId: string,
-  messages: ChatMessage[]
+  messages: ChatMessage[],
+  signal?: AbortSignal
 ): AsyncGenerator<{ chunk?: string; reasoningChunk?: string; httpStatus?: number }, void, unknown> {
   const url = buildApiUrl(provider.endpoint, '/chat/completions')
   
@@ -63,6 +64,7 @@ export async function* streamChatCompletion(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(requestBody),
+    signal,
   })
 
   if (!response.ok) {
