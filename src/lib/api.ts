@@ -46,8 +46,15 @@ export async function* streamChatCompletion(
   provider: Provider,
   modelId: string,
   messages: ChatMessage[]
-): AsyncGenerator<{ chunk?: string; httpStatus?: number }, void, unknown> {
+): AsyncGenerator<{ chunk?: string; reasoningChunk?: string; httpStatus?: number }, void, unknown> {
   const url = buildApiUrl(provider.endpoint, '/chat/completions')
+  
+  const requestBody = {
+    model: modelId,
+    messages,
+    stream: true,
+    ...(provider.requestParams || {}),
+  }
   
   const response = await fetch(url, {
     method: 'POST',
@@ -55,11 +62,7 @@ export async function* streamChatCompletion(
       'Authorization': `Bearer ${provider.apiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      model: modelId,
-      messages,
-      stream: true,
-    }),
+    body: JSON.stringify(requestBody),
   })
 
   if (!response.ok) {
@@ -93,9 +96,14 @@ export async function* streamChatCompletion(
           try {
             const json = JSON.parse(trimmed.slice(6))
             const delta = json.choices?.[0]?.delta
+            const message = json.choices?.[0]?.message
             
-            if (delta?.content) {
-              yield { chunk: delta.content }
+            if (delta?.reasoning_content || message?.reasoning_content) {
+              yield { reasoningChunk: delta?.reasoning_content || message?.reasoning_content }
+            }
+            
+            if (delta?.content || message?.content) {
+              yield { chunk: delta?.content || message?.content }
             }
           } catch (e) {
             console.warn('Failed to parse SSE:', trimmed)

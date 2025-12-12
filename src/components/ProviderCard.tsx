@@ -8,6 +8,7 @@ import { GearSix, Trash, Plus, ArrowsDownUp, MagnifyingGlass, SortAscending, X }
 import { Provider } from '@/lib/types'
 import { fetchModelsFromProvider } from '@/lib/api'
 import { toast } from 'sonner'
+import { RequestParamsCard } from './RequestParamsCard'
 
 interface ProviderCardProps {
   provider: Provider
@@ -16,6 +17,7 @@ interface ProviderCardProps {
   onDelete: (providerId: string) => void
   onFetchModels: (providerId: string, models: string[]) => void
   onDragStart: (provider: Provider, modelId: string) => void
+  onUpdateParams: (providerId: string, params: Record<string, any>) => void
 }
 
 export function ProviderCard({
@@ -25,6 +27,7 @@ export function ProviderCard({
   onDelete,
   onFetchModels,
   onDragStart,
+  onUpdateParams,
 }: ProviderCardProps) {
   const [loading, setLoading] = useState(false)
   const [manualModel, setManualModel] = useState('')
@@ -188,6 +191,12 @@ export function ProviderCard({
           </Button>
         </div>
       </div>
+
+      <RequestParamsCard
+        providerId={provider.id}
+        params={provider.requestParams || {}}
+        onUpdate={onUpdateParams}
+      />
     </Card>
   )
 }

@@ -3,6 +3,7 @@ export interface Provider {
   name: string
   endpoint: string
   apiKey: string
+  requestParams?: Record<string, any>
 }
 
 export interface Model {

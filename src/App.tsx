@@ -103,6 +103,14 @@ function App() {
     )
   }
 
+  const handleUpdateProviderParams = (providerId: string, params: Record<string, any>) => {
+    setProviders((current) =>
+      (current || []).map(p =>
+        p.id === providerId ? { ...p, requestParams: params } : p
+      )
+    )
+  }
+
   const detectThinkingSection = (text: string): { thinking: string; content: string } | null => {
     const thinkMatch = text.match(/<think>([\s\S]*?)<\/think>/i)
     if (thinkMatch) {
@@ -152,6 +160,7 @@ function App() {
         let contentText = ''
         let inThinking = false
         let thinkingProcessed = false
+        let hasReasoningContent = false
 
         for await (const data of streamChatCompletion(slot.provider!, slot.modelId!, messages)) {
           if (data.httpStatus !== undefined) {
@@ -159,69 +168,99 @@ function App() {
             continue
           }
 
-          if (!data.chunk) continue
-          
-          const chunk = data.chunk
-          fullText += chunk
-
-          if (!response.metrics.firstToken) {
-            response.metrics.firstToken = Date.now()
+          if (data.reasoningChunk) {
+            hasReasoningContent = true
+            thinkingText += data.reasoningChunk
+            
+            if (!response.metrics.cotStart) {
+              response.metrics.cotStart = response.metrics.firstToken || Date.now()
+            }
+            response.metrics.cotEnd = Date.now()
+            
+            setResponses((current) =>
+              current.map(r =>
+                r.slotId === slot.id
+                  ? { ...r, thinking: thinkingText }
+                  : r
+              )
+            )
           }
 
-          if (!thinkingProcessed) {
-            const detected = detectThinkingSection(fullText)
-            if (detected) {
-              thinkingText = detected.thinking
-              contentText = detected.content
-              thinkingProcessed = true
-              
-              if (!response.metrics.cotStart) {
-                response.metrics.cotStart = response.metrics.firstToken
+          if (!data.chunk && !data.reasoningChunk) continue
+          
+          const chunk = data.chunk || ''
+          
+          if (chunk) {
+            fullText += chunk
+
+            if (!response.metrics.firstToken) {
+              response.metrics.firstToken = Date.now()
+            }
+
+            if (!hasReasoningContent && !thinkingProcessed) {
+              const detected = detectThinkingSection(fullText)
+              if (detected) {
+                thinkingText = detected.thinking
+                contentText = detected.content
+                thinkingProcessed = true
+                
+                if (!response.metrics.cotStart) {
+                  response.metrics.cotStart = response.metrics.firstToken
+                }
+                if (!response.metrics.cotEnd) {
+                  response.metrics.cotEnd = Date.now()
+                  response.metrics.cotTokens = estimateTokenCount(thinkingText)
+                }
+                if (contentText && !response.metrics.contentStart) {
+                  response.metrics.contentStart = Date.now()
+                }
+              } else {
+                if (fullText.includes('<think>')) {
+                  inThinking = true
+                  if (!response.metrics.cotStart) {
+                    response.metrics.cotStart = Date.now()
+                  }
+                }
               }
-              if (!response.metrics.cotEnd) {
-                response.metrics.cotEnd = Date.now()
-                response.metrics.cotTokens = estimateTokenCount(thinkingText)
-              }
-              if (contentText && !response.metrics.contentStart) {
+            } else if (hasReasoningContent) {
+              contentText += chunk
+              if (!response.metrics.contentStart) {
                 response.metrics.contentStart = Date.now()
               }
             } else {
-              if (fullText.includes('<think>')) {
-                inThinking = true
-                if (!response.metrics.cotStart) {
-                  response.metrics.cotStart = Date.now()
-                }
+              contentText += chunk
+            }
+
+            if (thinkingProcessed && contentText) {
+              if (!response.metrics.contentStart) {
+                response.metrics.contentStart = Date.now()
               }
             }
-          } else {
-            contentText += chunk
-          }
 
-          if (thinkingProcessed && contentText) {
-            if (!response.metrics.contentStart) {
-              response.metrics.contentStart = Date.now()
-            }
-          }
-
-          setResponses((current) =>
-            current.map(r =>
-              r.slotId === slot.id
-                ? {
-                    ...r,
-                    thinking: thinkingText,
-                    content: thinkingProcessed ? contentText : fullText,
-                  }
-                : r
+            setResponses((current) =>
+              current.map(r =>
+                r.slotId === slot.id
+                  ? {
+                      ...r,
+                      thinking: thinkingText,
+                      content: hasReasoningContent ? contentText : (thinkingProcessed ? contentText : fullText),
+                    }
+                  : r
+              )
             )
-          )
+          }
         }
 
-        const finalDetected = detectThinkingSection(fullText)
-        if (finalDetected) {
-          thinkingText = finalDetected.thinking
-          contentText = finalDetected.content
+        if (hasReasoningContent) {
+          response.metrics.cotTokens = estimateTokenCount(thinkingText)
         } else {
-          contentText = fullText
+          const finalDetected = detectThinkingSection(fullText)
+          if (finalDetected) {
+            thinkingText = finalDetected.thinking
+            contentText = finalDetected.content
+          } else {
+            contentText = fullText
+          }
         }
 
         response.metrics.contentEnd = Date.now()
@@ -353,6 +392,7 @@ function App() {
                         onDelete={handleDeleteProvider}
                         onFetchModels={handleFetchModels}
                         onDragStart={handleDragStart}
+                        onUpdateParams={handleUpdateProviderParams}
                       />
                     ))}
                   </div>
