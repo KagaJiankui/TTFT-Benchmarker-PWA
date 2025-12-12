@@ -3,7 +3,6 @@ import { useKV } from '@github/spark/hooks'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Plus, Play } from '@phosphor-icons/react'
@@ -376,29 +375,25 @@ function App() {
             </Card>
 
             {responses.length > 0 && (
-              <Tabs defaultValue={activeSlots[0]?.id} className="w-full">
-                <TabsList className="w-full justify-start overflow-x-auto">
-                  {activeSlots.map((slot) => (
-                    <TabsTrigger key={slot.id} value={slot.id} className="text-xs font-mono">
-                      {slot.displayName}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-
-                {activeSlots.map((slot) => {
-                  const response = responses.find(r => r.slotId === slot.id)
-                  return (
-                    <TabsContent key={slot.id} value={slot.id} className="mt-4">
-                      {response && (
-                        <ResponsePanel
-                          response={response}
-                          displayName={slot.displayName || ''}
-                        />
-                      )}
-                    </TabsContent>
-                  )
-                })}
-              </Tabs>
+              <div className="w-full">
+                <ScrollArea className="w-full">
+                  <div className="flex gap-4 pb-4">
+                    {activeSlots.map((slot) => {
+                      const response = responses.find(r => r.slotId === slot.id)
+                      return (
+                        <div key={slot.id} className="flex-shrink-0 w-[600px]">
+                          {response && (
+                            <ResponsePanel
+                              response={response}
+                              displayName={slot.displayName || ''}
+                            />
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </ScrollArea>
+              </div>
             )}
           </div>
         </div>

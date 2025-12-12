@@ -36,9 +36,9 @@ export function MetricsDisplay({ metrics }: MetricsDisplayProps) {
     : null
 
   return (
-    <div className="space-y-2 text-xs font-mono">
+    <div className="flex flex-wrap gap-2 text-xs font-mono">
       {ttft !== null && (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1">
           <span className="text-muted-foreground">TTFT:</span>
           <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-700">
             {formatDuration(ttft)}
@@ -48,14 +48,14 @@ export function MetricsDisplay({ metrics }: MetricsDisplayProps) {
 
       {cotDuration !== null && (
         <>
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">CoT Time:</span>
+          <div className="flex items-center gap-1">
+            <span className="text-muted-foreground">CoT:</span>
             <Badge variant="outline" className="bg-purple-50 border-purple-200 text-purple-700">
               {formatDuration(cotDuration)}
             </Badge>
           </div>
           {cotTPS !== null && (
-            <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1">
               <span className="text-muted-foreground">CoT TPS:</span>
               <Badge variant="outline" className="bg-purple-50 border-purple-200 text-purple-700">
                 {cotTPS.toFixed(1)} t/s
@@ -66,7 +66,7 @@ export function MetricsDisplay({ metrics }: MetricsDisplayProps) {
       )}
 
       {contentTTFT !== null && (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1">
           <span className="text-muted-foreground">Content TTFT:</span>
           <Badge variant="outline" className="bg-green-50 border-green-200 text-green-700">
             {formatDuration(contentTTFT)}
@@ -75,7 +75,7 @@ export function MetricsDisplay({ metrics }: MetricsDisplayProps) {
       )}
 
       {contentTPS !== null && (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1">
           <span className="text-muted-foreground">Content TPS:</span>
           <Badge variant="outline" className="bg-green-50 border-green-200 text-green-700">
             {contentTPS.toFixed(1)} t/s
@@ -84,7 +84,7 @@ export function MetricsDisplay({ metrics }: MetricsDisplayProps) {
       )}
 
       {totalDuration !== null && (
-        <div className="flex items-center justify-between pt-2 border-t">
+        <div className="flex items-center gap-1">
           <span className="text-muted-foreground">Total:</span>
           <Badge variant="outline" className="bg-slate-50 border-slate-200 text-slate-700">
             {formatDuration(totalDuration)}
