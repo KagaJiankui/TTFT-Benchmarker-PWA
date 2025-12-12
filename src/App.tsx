@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { Plus, Play, X } from '@phosphor-icons/react'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -448,6 +449,10 @@ function App() {
                     <TabsList className="inline-flex h-auto flex-wrap min-w-full justify-start bg-transparent gap-0 p-0 border-0">
                       {activeSlots.map((slot, index) => {
                         const response = responses.find(r => r.slotId === slot.id)
+                        const totalDuration = response?.metrics.requestSent && response?.metrics.contentEnd 
+                          ? ((response.metrics.contentEnd - response.metrics.requestSent) / 1000).toFixed(2) 
+                          : null
+                        
                         return (
                           <TabsTrigger
                             key={slot.id}
@@ -458,7 +463,17 @@ function App() {
                             {response?.status === 'streaming' && (
                               <span className="ml-2 inline-block w-2 h-2 bg-current animate-pulse" />
                             )}
-                            {response?.status === 'complete' && (
+                            {response?.status === 'complete' && totalDuration && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="ml-2 cursor-help">✓</span>
+                                </TooltipTrigger>
+                                <TooltipContent className="border-2 border-foreground">
+                                  <p className="font-mono">总时长: {totalDuration}s</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                            {response?.status === 'complete' && !totalDuration && (
                               <span className="ml-2">✓</span>
                             )}
                             <button
