@@ -30,6 +30,7 @@ function App() {
   const [isRunning, setIsRunning] = useState(false)
   const [providerDialogOpen, setProviderDialogOpen] = useState(false)
   const [editingProvider, setEditingProvider] = useState<Provider | undefined>()
+  const [systemPromptExpanded, setSystemPromptExpanded] = useState(false)
   
   const dragDataRef = useRef<{ provider: Provider; modelId: string } | null>(null)
 
@@ -274,7 +275,11 @@ function App() {
                 placeholder="Enter system prompt (optional)"
                 value={systemPrompt}
                 onChange={(e) => setSystemPrompt(e.target.value)}
-                className="mt-2 min-h-32 resize-none"
+                onFocus={() => setSystemPromptExpanded(true)}
+                onBlur={() => setSystemPromptExpanded(false)}
+                className={`mt-2 resize-none transition-all duration-300 ${
+                  systemPromptExpanded ? 'min-h-32' : 'min-h-10'
+                }`}
               />
             </Card>
 
