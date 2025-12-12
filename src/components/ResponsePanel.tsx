@@ -12,7 +12,7 @@ interface ResponsePanelProps {
 
 export function ResponsePanel({ response, displayName }: ResponsePanelProps) {
   return (
-    <Card className="p-4 flex flex-col h-[600px]">
+    <div className="flex flex-col h-[600px]">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="font-semibold text-sm font-mono">{displayName}</h3>
         {response.status === 'streaming' && (
@@ -45,7 +45,7 @@ export function ResponsePanel({ response, displayName }: ResponsePanelProps) {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Badge variant="outline" className="bg-purple-50 border-purple-200 text-purple-700">
-                    思考过程
+                    思考过程 (CoT)
                   </Badge>
                 </div>
                 <div className="bg-muted/50 rounded-md p-3 text-sm whitespace-pre-wrap">
@@ -84,6 +84,6 @@ export function ResponsePanel({ response, displayName }: ResponsePanelProps) {
           )}
         </div>
       </ScrollArea>
-    </Card>
+    </div>
   )
 }

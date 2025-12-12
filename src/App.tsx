@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Plus, Play } from '@phosphor-icons/react'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -30,6 +31,7 @@ function App() {
   const [providerDialogOpen, setProviderDialogOpen] = useState(false)
   const [editingProvider, setEditingProvider] = useState<Provider | undefined>()
   const [systemPromptExpanded, setSystemPromptExpanded] = useState(false)
+  const [activeTab, setActiveTab] = useState<string>('0')
   
   const dragDataRef = useRef<{ provider: Provider; modelId: string } | null>(null)
 
@@ -125,6 +127,7 @@ function App() {
     }
 
     setIsRunning(true)
+    setActiveTab('0')
     
     const initialResponses: ModelResponse[] = activeSlots.map(slot => ({
       slotId: slot.id,
@@ -375,25 +378,48 @@ function App() {
             </Card>
 
             {responses.length > 0 && (
-              <div className="w-full">
-                <ScrollArea className="w-full">
-                  <div className="flex gap-4 pb-4">
-                    {activeSlots.map((slot) => {
+              <Card className="p-4">
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                  <div className="w-full overflow-x-auto">
+                    <TabsList className="inline-flex h-auto flex-wrap min-w-full justify-start bg-muted/50 gap-1 p-1">
+                      {activeSlots.map((slot, index) => {
+                        const response = responses.find(r => r.slotId === slot.id)
+                        return (
+                          <TabsTrigger
+                            key={slot.id}
+                            value={index.toString()}
+                            className="flex-shrink-0"
+                          >
+                            <span className="truncate max-w-[200px]">{slot.displayName || `Model ${index + 1}`}</span>
+                            {response?.status === 'streaming' && (
+                              <span className="ml-2 inline-block w-2 h-2 bg-current rounded-full animate-pulse" />
+                            )}
+                            {response?.status === 'complete' && (
+                              <span className="ml-2">✓</span>
+                            )}
+                          </TabsTrigger>
+                        )
+                      })}
+                    </TabsList>
+                  </div>
+                  
+                  <div className="mt-4">
+                    {activeSlots.map((slot, index) => {
                       const response = responses.find(r => r.slotId === slot.id)
                       return (
-                        <div key={slot.id} className="flex-shrink-0 w-[600px]">
+                        <TabsContent key={slot.id} value={index.toString()} className="m-0">
                           {response && (
                             <ResponsePanel
                               response={response}
                               displayName={slot.displayName || ''}
                             />
                           )}
-                        </div>
+                        </TabsContent>
                       )
                     })}
                   </div>
-                </ScrollArea>
-              </div>
+                </Tabs>
+              </Card>
             )}
           </div>
         </div>

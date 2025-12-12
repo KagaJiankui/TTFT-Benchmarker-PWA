@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,6 +17,18 @@ export function ProviderDialog({ open, onClose, onSave, provider }: ProviderDial
   const [endpoint, setEndpoint] = useState(provider?.endpoint || '')
   const [apiKey, setApiKey] = useState(provider?.apiKey || '')
 
+  useEffect(() => {
+    if (provider) {
+      setName(provider.name)
+      setEndpoint(provider.endpoint)
+      setApiKey(provider.apiKey)
+    } else {
+      setName('')
+      setEndpoint('')
+      setApiKey('')
+    }
+  }, [provider, open])
+
   const handleSave = () => {
     if (!name || !endpoint || !apiKey) return
     
@@ -25,9 +37,6 @@ export function ProviderDialog({ open, onClose, onSave, provider }: ProviderDial
   }
 
   const handleClose = () => {
-    setName('')
-    setEndpoint('')
-    setApiKey('')
     onClose()
   }
 
