@@ -57,6 +57,10 @@ export async function* streamChatCompletion(
     ...(provider.requestParams || {}),
   }
   
+  console.log('[API] Request to:', url)
+  console.log('[API] Request body:', JSON.stringify(requestBody, null, 2))
+  console.log('[API] Provider params:', provider.requestParams)
+  
   const response = await fetch(url, {
     method: 'POST',
     headers: {

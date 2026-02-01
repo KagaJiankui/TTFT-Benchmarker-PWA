@@ -8,7 +8,7 @@ import { GearSix, Trash, Plus, ArrowsDownUp, MagnifyingGlass, SortAscending, X }
 import { Provider } from '@/lib/types'
 import { fetchModelsFromProvider } from '@/lib/api'
 import { toast } from 'sonner'
-import { RequestParamsCard } from './RequestParamsCard'
+import { JsonTreeEditor } from './JsonTreeEditor'
 
 interface ProviderCardProps {
   provider: Provider
@@ -206,7 +206,7 @@ export function ProviderCard({
       )}
 
       {isExpanded && (
-        <RequestParamsCard
+        <JsonTreeEditor
           providerId={provider.id}
           params={provider.requestParams || {}}
           onUpdate={onUpdateParams}
